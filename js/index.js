@@ -1,13 +1,20 @@
 (function () {
   const form = document.querySelector("#github-form");
-  const input = document.querySelector("#search");
+  const searchQuery = document.querySelector("#search");
+  const searchType = document.querySelector("#search-type");
   const list = document.querySelector("#user-list");
   const repos = document.querySelector("#repos-list");
+
   function onSubmit(e) {
-    console.log(input);
+    console.log(searchQuery);
     e.preventDefault();
-    let search = input.value;
-    getSearch(search);
+    let search = searchQuery.value;
+    let queryType = searchType.value;
+    if (queryType == "repos") {
+      getSearchByRepos(search);
+    } else if (queryType == "user") {
+      getSearch(search);
+    }
     removeAllChildNodes(list);
     removeAllChildNodes(repos);
   }
@@ -22,6 +29,18 @@
     );
     const userData = await response.json();
     knowsWhatToDoNext(userData);
+  }
+  async function getSearchByRepos(query) {
+    const response = await fetch(
+      `https://api.github.com/search/repositories?q=${query}`,
+      {
+        headers: {
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+    const repoData = await response.json();
+    returnRepoDetails(repoData.items);
   }
   function knowsWhatToDoNext(details) {
     for (let u of details.items) {
@@ -60,9 +79,6 @@
     for (let r of reposList) {
       let li = document.createElement("li");
       let name = r.name;
-      //   let fullLink = document.createElement("a");
-      //   fullLink.innerText = link;
-      //   fullLink.setAttribute("href", link);
       li.append(name);
       repos.appendChild(li);
     }
